@@ -1,7 +1,18 @@
+use itertools::Itertools;
 use std::collections::HashSet;
 
-use crate::read_lines;
-use itertools::Itertools;
+trait Priority {
+    fn priority(&self) -> usize;
+}
+
+impl Priority for char {
+    fn priority(&self) -> usize {
+        match self.is_lowercase() {
+            true => (*self as usize) - 96,
+            false => (*self as usize) - 38,
+        }
+    }
+}
 
 fn part1(input: Vec<String>) -> usize {
     input
@@ -11,18 +22,11 @@ fn part1(input: Vec<String>) -> usize {
             lhs.chars()
                 .sorted()
                 .dedup()
-                .map(|c| match rhs.contains(c) {
-                    true => match c.is_lowercase() {
-                        true => (c as usize) - 96,
-                        false => (c as usize) - 38,
-                    },
-                    false => 0,
-                })
-                .sum()
+                .filter(|c| rhs.contains(*c))
+                .map(|c| c.priority())
+                .sum::<usize>()
         })
-        .collect::<Vec<usize>>()
-        .iter()
-        .sum()
+        .sum::<usize>()
 }
 
 fn part2(input: Vec<String>) -> usize {
@@ -38,19 +42,15 @@ fn part2(input: Vec<String>) -> usize {
             .fold(all_chars.clone(), |a, b| {
                 a.intersection(&b).copied().collect()
             });
-        let c = dup.iter().next().unwrap();
-        sum += match c.is_lowercase() {
-            true => (*c as usize) - 96,
-            false => (*c as usize) - 38,
-        }
+        sum += dup.iter().next().unwrap().priority();
     }
-
     sum
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::read_lines;
 
     #[test]
     fn ex1() {
