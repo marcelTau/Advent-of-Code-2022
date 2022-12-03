@@ -66,4 +66,9 @@ mod tests {
     fn ex3() {
         assert_eq!(part2(read_lines("inputs/day3.test")), 70);
     }
+
+    #[test]
+    fn ex4() {
+        assert_eq!(part2(read_lines("inputs/day3.input")), 2817);
+    }
 }
