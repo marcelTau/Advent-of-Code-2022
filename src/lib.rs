@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 mod day1;
+mod day3;
 
 pub fn read_lines(path: &str) -> Vec<String> {
     std::fs::read_to_string(path)
