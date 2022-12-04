@@ -13,8 +13,8 @@ impl FromStr for Pair {
         let (lhs, rhs) = s.split_once("-").unwrap();
 
         Ok(Self {
-            start: lhs.parse::<usize>().unwrap(),
-            end: rhs.parse::<usize>().unwrap(),
+            start: lhs.parse().unwrap(),
+            end: rhs.parse().unwrap(),
         })
     }
 }
@@ -32,8 +32,8 @@ impl FromStr for Assignment {
         let (lhs, rhs) = s.split_once(",").unwrap();
 
         Ok(Self {
-            left: Pair::from_str(lhs).unwrap(),
-            right: Pair::from_str(rhs).unwrap(),
+            left: lhs.parse().unwrap(),
+            right: rhs.parse().unwrap(),
         })
     }
 }
@@ -54,7 +54,7 @@ fn part1(lines: Vec<String>) -> usize {
     lines
         .into_iter()
         .filter(|s| !s.is_empty())
-        .map(|line| Assignment::from_str(&line).unwrap())
+        .map(|line| line.parse::<Assignment>().unwrap())
         .filter(|a| a.is_contained())
         .count()
 }
@@ -63,7 +63,7 @@ fn part2(lines: Vec<String>) -> usize {
     lines
         .into_iter()
         .filter(|s| !s.is_empty())
-        .map(|line| Assignment::from_str(&line).unwrap())
+        .map(|line| line.parse::<Assignment>().unwrap())
         .filter(|a| a.is_overlapped())
         .count()
 }
