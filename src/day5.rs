@@ -1,46 +1,69 @@
+use std::str::FromStr;
+
 struct CrateStacks {
     stack: Vec<Vec<char>>,
+    instructions: Vec<String>,
+    pattern: Vec<String>,
 }
 
 impl CrateStacks {
-    fn mov(stack: &mut Vec<Vec<char>>, from: usize, to: usize, count: usize) {
+    fn mov(&mut self, from: usize, to: usize, count: usize) {
         let from = from - 1;
         let to = to - 1;
 
-        //println!("before: {stack:#?}");
         for _ in 1..=count {
-            let item = stack.get_mut(from).unwrap().pop().unwrap();
-            stack.get_mut(to).unwrap().push(item);
+            let item = self.stack.get_mut(from).unwrap().pop().unwrap();
+            self.stack.get_mut(to).unwrap().push(item);
         }
-        //println!("after: {stack:#?}");
     }
 
-    fn mov2(stack: &mut Vec<Vec<char>>, from: usize, to: usize, count: usize) {
+    fn mov2(&mut self, from: usize, to: usize, count: usize) {
         let from = from - 1;
         let to = to - 1;
 
-        //println!("before: {stack:#?}");
         let mut tmp = Vec::new();
         for _ in 1..=count {
-            let item = stack.get_mut(from).unwrap().pop().unwrap();
+            let item = self.stack.get_mut(from).unwrap().pop().unwrap();
             tmp.insert(0, item);
         }
-        stack.get_mut(to).unwrap().append(&mut tmp);
-        //println!("after: {stack:#?}");
+        self.stack.get_mut(to).unwrap().append(&mut tmp);
     }
 
-    pub fn from(fname: impl Into<String>) -> String {
+    fn apply_instructions(&mut self) {
+        for ins in self.instructions[1..self.instructions.len() - 1].to_vec() {
+            let s: Vec<&str> = ins.split(' ').collect();
+            let count = s[1].parse::<usize>().unwrap();
+            let from = s[3].parse::<usize>().unwrap();
+            let to = s[5].parse::<usize>().unwrap();
+            self.mov(from, to, count);
+        }
+    }
+
+    fn apply_instructions2(&mut self) {
+        for ins in self.instructions[1..self.instructions.len() - 1].to_vec() {
+            let s: Vec<&str> = ins.split(' ').collect();
+            let count = s[1].parse::<usize>().unwrap();
+            let from = s[3].parse::<usize>().unwrap();
+            let to = s[5].parse::<usize>().unwrap();
+            self.mov2(from, to, count);
+        }
+    }
+
+    pub fn get_solution(&self) -> String {
+        self.stack.iter().flat_map(|s| s.last()).collect()
+    }
+
+
+    pub fn from(fname: impl Into<String>) -> Self {
         let lines = std::fs::read_to_string(fname.into()).unwrap();
         let lines: Vec<&str> = lines.split("\n").collect();
-        let pos = lines.iter().position(|s| s.is_empty());
-        let (pattern, instructions) = lines.split_at(pos.unwrap());
-        let indecies: Vec<usize> = (1..=(pattern.last().unwrap().len() - 1)).step_by(4).collect();
+        let (pattern, instructions) =
+            lines.split_at(lines.iter().position(|s| s.is_empty()).unwrap());
+        let indecies: Vec<usize> = (1..=(pattern.last().unwrap().len() - 1))
+            .step_by(4)
+            .collect();
 
-
-        let mut stacks: Vec<Vec<char>> = Vec::new();
-        for _ in 0..=(indecies.len() - 1) {
-            stacks.push(vec![]);
-        }
+        let mut stacks: Vec<Vec<char>> = vec![Vec::new(); indecies.len()];
 
         for line in pattern[..pattern.len() - 1].to_vec() {
             for (i, idx) in indecies.iter().enumerate() {
@@ -52,42 +75,44 @@ impl CrateStacks {
             }
         }
 
-        // move 1 from 2 to 1
-
-        //println!("{instructions:?}");
-        for ins in instructions[1..instructions.len()-1].to_vec() {
-            //println!("{ins:?}");
-            let s: Vec<&str> = ins.split(' ').collect();
-            let count = s[1].parse::<usize>().unwrap();
-            let from = s[3].parse::<usize>().unwrap();
-            let to = s[5].parse::<usize>().unwrap();
-
-            Self::mov2(&mut stacks, from, to, count);
-        }
-
-        stacks.iter().flat_map(|s| s.last()).collect::<String>()
+        return Self {
+            stack: stacks,
+            instructions: instructions.iter().map(|s| s.to_string()).collect(),
+            pattern: pattern.iter().map(|s| s.to_string()).collect(),
+        };
     }
 }
 
-
 fn part1(fname: impl Into<String>) -> String {
-    CrateStacks::from(fname)
+    let mut stack = CrateStacks::from(fname);
+    stack.apply_instructions();
+    stack.get_solution()
+}
+
+fn part2(fname: impl Into<String>) -> String {
+    let mut stack = CrateStacks::from(fname);
+    stack.apply_instructions2();
+    stack.get_solution()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    //#[test]
-    //fn ex1() {
-        //assert_eq!(part1("inputs/day5.test"), "CMZ".to_string());
-    //}
-    //#[test]
-    //fn ex2() {
-        //assert_eq!(part1("inputs/day5.input"), "FCVRLMVQP".to_string());
-    //}
+    #[test]
+    fn ex1() {
+        assert_eq!(part1("inputs/day5.test"), "CMZ".to_string());
+    }
+    #[test]
+    fn ex2() {
+        assert_eq!(part1("inputs/day5.input"), "FCVRLMVQP".to_string());
+    }
     #[test]
     fn ex3() {
-        assert_eq!(part1("inputs/day5.input"), "MCD".to_string());
+        assert_eq!(part2("inputs/day5.test"), "MCD".to_string());
+    }
+    #[test]
+    fn ex4() {
+        assert_eq!(part2("inputs/day5.input"), "RWLWGJGFD".to_string());
     }
 }
