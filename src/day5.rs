@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 struct CrateStacks {
     stack: Vec<Vec<char>>,
     instructions: Vec<String>,
@@ -7,45 +5,45 @@ struct CrateStacks {
 }
 
 impl CrateStacks {
-    fn mov(&mut self, from: usize, to: usize, count: usize) {
+    fn mov(&mut self, from: usize, to: usize, count: usize) -> Option<()> {
         let from = from - 1;
         let to = to - 1;
 
         for _ in 1..=count {
-            let item = self.stack.get_mut(from).unwrap().pop().unwrap();
-            self.stack.get_mut(to).unwrap().push(item);
+            let item = self.stack.get_mut(from)?.pop()?;
+            self.stack.get_mut(to)?.push(item);
         }
+        Some(())
     }
 
-    fn mov2(&mut self, from: usize, to: usize, count: usize) {
+    fn mov2(&mut self, from: usize, to: usize, count: usize) -> Option<()> {
         let from = from - 1;
         let to = to - 1;
 
         let mut tmp = Vec::new();
         for _ in 1..=count {
-            let item = self.stack.get_mut(from).unwrap().pop().unwrap();
+            let item = self.stack.get_mut(from)?.pop()?;
             tmp.insert(0, item);
         }
-        self.stack.get_mut(to).unwrap().append(&mut tmp);
+        self.stack.get_mut(to)?.append(&mut tmp);
+        Some(())
     }
 
     fn apply_instructions(&mut self) {
         for ins in self.instructions[1..self.instructions.len() - 1].to_vec() {
-            let s: Vec<&str> = ins.split(' ').collect();
-            let count = s[1].parse::<usize>().unwrap();
-            let from = s[3].parse::<usize>().unwrap();
-            let to = s[5].parse::<usize>().unwrap();
-            self.mov(from, to, count);
+            let nums: Vec<usize> = ins.split(' ').flat_map(str::parse).collect();
+            if let [count, from, to] = nums[..] {
+                self.mov(from, to, count);
+            }
         }
     }
 
     fn apply_instructions2(&mut self) {
         for ins in self.instructions[1..self.instructions.len() - 1].to_vec() {
-            let s: Vec<&str> = ins.split(' ').collect();
-            let count = s[1].parse::<usize>().unwrap();
-            let from = s[3].parse::<usize>().unwrap();
-            let to = s[5].parse::<usize>().unwrap();
-            self.mov2(from, to, count);
+            let nums: Vec<usize> = ins.split(' ').flat_map(str::parse).collect();
+            if let [count, from, to] = nums[..] {
+                self.mov2(from, to, count);
+            }
         }
     }
 
