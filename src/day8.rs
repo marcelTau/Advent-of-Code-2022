@@ -1,32 +1,36 @@
 use std::collections::HashSet;
 
-fn part1(fname: &str) -> usize {
+const UP: (i32, i32) = (-1, 0);
+const DOWN: (i32, i32) = (1, 0);
+const LEFT: (i32, i32) = (0, -1);
+const RIGHT: (i32, i32) = (0, 1);
+
+fn parse(fname: &str) -> (Vec<Vec<char>>, i32, i32) {
     let lines = std::fs::read_to_string(fname).unwrap();
-    let lines: Vec<&str> = lines.split("\n").collect();
-    let lines = lines.into_iter().filter(|line| !line.is_empty()).collect::<Vec<&str>>();
+    let lines = lines.split('\n');
+    let lines = lines.filter(|line| !line.is_empty()).collect::<Vec<&str>>();
 
     let mut grid: Vec<Vec<char>> = vec![];
     lines
         .iter()
         .for_each(|line| grid.push(line.chars().collect::<Vec<char>>()));
 
-    let width = lines[0].len() as i32;
-    let height = lines.len() as i32;
+    let width = grid[0].len() as i32;
+    let height = grid.len() as i32;
 
-    println!("{width}, {height}");
+    (grid, width, height)
+}
 
-    let up = (-1, 0);
-    let down = (1, 0);
-    let left = (0, -1);
-    let right = (0, 1);
+fn part1(fname: &str) -> usize {
+    let (grid, width, height) = parse(fname);
 
     let mut total = HashSet::new();
 
     for (start, step, search_dir) in [
-        ((0, 0), right, down),
-        ((0, 0), down, right),
-        ((height - 1, width - 1), up, left),
-        ((height - 1, width - 1), left, up),
+        ((0, 0), RIGHT, DOWN),
+        ((0, 0), DOWN, RIGHT),
+        ((height - 1, width - 1), UP, LEFT),
+        ((height - 1, width - 1), LEFT, UP),
     ] {
         let mut walk = start;
 
@@ -60,31 +64,14 @@ fn part1(fname: &str) -> usize {
 }
 
 fn part2(fname: &str) -> usize {
-    let lines = std::fs::read_to_string(fname).unwrap();
-    let lines: Vec<&str> = lines.split("\n").collect();
-    let lines = lines.into_iter().filter(|line| !line.is_empty()).collect::<Vec<&str>>();
-
-    let mut grid: Vec<Vec<char>> = vec![];
-    lines
-        .iter()
-        .for_each(|line| grid.push(line.chars().collect::<Vec<char>>()));
-
-    let width = lines[0].len() as i32;
-    let height = lines.len() as i32;
-
-    println!("{width}, {height}");
-
-    let up = (-1, 0);
-    let down = (1, 0);
-    let left = (0, -1);
-    let right = (0, 1);
+    let (grid, width, height) = parse(fname);
 
     let mut max = 0;
 
     for row in 1..height - 1 {
         for col in 1..width - 1 {
             let mut total = 1;
-            for step in [up, down, left, right] {
+            for step in [UP, DOWN, LEFT, RIGHT] {
                 let mut walk = (row, col);
 
                 let current_height = grid[row as usize][col as usize];
